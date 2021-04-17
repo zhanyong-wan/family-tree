@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """Libraries for generating nice-looking family tree illustration via
 graphviz (dot).
 """
