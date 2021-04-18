@@ -348,7 +348,7 @@ class Family:
           for child in children:
             # Define the elbow point.
             dot.append(f'\tp_{child} [shape=circle label="" height=0.01 width=0.01];')
-          middle_child = children[len(children) // 2]
+          middle_child = children[(len(children) -1) // 2]
           dot.append(f'\t{marriage_id} -> p_{middle_child} [weight=100];')
           for child in children:
             dot.append(f'\tp_{child} -> {child} [weight=100];')
