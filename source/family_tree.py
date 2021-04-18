@@ -309,14 +309,61 @@ class Family:
 """)
 
     for i, gen in enumerate(self.Sort()):
-      dot.append(f'\t# Generation {i + 1}.')
+      gen_num = i + 1
+      dot.append('\t################')
+      dot.append(f'\t# Generation {gen_num}.')
+
+      dot.append('')
+      dot.append(f'\t# People in generation {gen_num}.')
       for p in gen:
         dot.append('\t' + p.ToDot())
+
+      # Each item is a (marriage ID, child ID list).
+      marriage_to_children = []
+      def GetChildren(marrage_id: Text) -> List[Text]:
+        for id, children in marriage_to_children:
+          if id == marriage_id:
+            return children
+        children = []
+        marriage_to_children.append((marriage_id, children))
+        return children
 
       for p in gen:
         if p.Father() and p.Mother():
           marriage_id = f'm_{p.Father().ID()}_{p.Mother().ID()}'
-          dot.append(f'\t{marriage_id} -> {p.ID()};')
+          GetChildren(marriage_id).append(p.ID())
+
+      dot.append('')
+      dot.append(f'\t# Parents of generation {gen_num}.')
+      for marriage_id, children in marriage_to_children:
+        if len(children) == 1:
+          dot.append(f'\t{marriage_id} -> {children[0]} [weight=10];')
+        else:
+          for child in children:
+            # Define the elbow point.
+            dot.append(f'\tp_{child} [shape=circle label="" height=0.01 width=0.01];')
+          middle_child = children[len(children) // 2]
+          dot.append(f'\t{marriage_id} -> p_{middle_child} [weight=10];')
+          for child in children:
+            dot.append(f'\tp_{child} -> {child} [weight=10];')
+
+      dot.append('')
+      dot.append(f'\t# Order the parent elbow points for generation {gen_num}.')
+      dot.append('\t{')
+      dot.append('\t\trank=same;')
+      last_p_node = None
+      for marriage_id, children in marriage_to_children:
+        if len(children) == 1:
+          continue
+        if last_p_node:
+          dot.append('\t\t{last_p_node} -> p_{children[0]} [style="invis"];')
+        chain = ' -> '.join(f'p_{child}' for child in children)
+        dot.append(f'\t\t{chain};')
+        last_p_node = children[-1]
+      dot.append('\t}')
+
+      dot.append('')
+      dot.append(f'\t# Order the people in generation {gen_num}.')
       dot.append('\t{')
       dot.append('\t\trank=same;')
       last_person = None
@@ -341,6 +388,7 @@ class Family:
         if p.Gender() == 'M':
           last_male = p
       dot.append('\t}')
+      dot.append('')
 
     dot.append('}')
     return '\n'.join(dot)
