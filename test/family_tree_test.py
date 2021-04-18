@@ -124,5 +124,21 @@ class FamilyTreeTest(unittest.TestCase):
 
     self.assertEqual(3, self.family.Size())
 
+  def testAddPersonWithFather(self):
+    p = self.family.Person('John Smith', father='Adam Smith')
+    q = self.family.Person('Adam Smith')
+
+    self.assertEqual(q, p.Father())
+    self.assertIsNone(p.Mother())
+    self.assertEqual(0, len(p.Children()))
+
+    self.assertIsNone(q.Father())
+    self.assertIsNone(q.Mother())
+    children = q.Children()
+    self.assertEqual(1, len(children))
+    self.assertEqual(p, children[0])
+
+    self.assertEqual(2, self.family.Size())
+
 if __name__ == '__main__':
   unittest.main()

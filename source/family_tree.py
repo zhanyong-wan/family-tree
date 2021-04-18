@@ -23,9 +23,11 @@ class Person:
     self.gender = None
     self.wife_ids = []  # IDs of wives.
     self.husband_ids = []  # IDs of husbands.
+    self.father = None
+    self.mother = None
+    self.children = []
     self.birth = None
     self.death = None
-    self.children = None
 
   def Family(self) -> 'Family':
     return self.family
@@ -45,6 +47,34 @@ class Person:
       self.husband_ids.append(husband_id)
       husband.AddWife(self)
     return self
+
+  def SetFather(self, father: 'Person') -> 'Person':
+    if self.father != father:
+      father.SetGender('M')
+      self.father = father
+      father.AddChild(self)
+    return self
+
+  def Father(self) -> 'Person':
+    return self.father
+
+  def Mother(self) -> 'Person':
+    return self.mother
+
+  def AddChild(self, child: 'Person') -> 'Person':
+    id = child.ID()
+    for c in self.children:
+      if c.ID() == id:
+        return self
+    self.children.append(child)
+    if self.Gender() == 'M':
+      child.SetFather(self)
+    elif self.Gender() == 'F':
+      child.SetMonther(self)
+    return self
+
+  def Children(self) -> Sequence['Person']:
+    return self.children
 
   def Update(self, **args) -> 'Person':
     for name, value in args.items():
@@ -74,6 +104,9 @@ class Person:
           husband_id = _GetDefaultIdFromName(husband_name)
           husband = self.Family().PersonById(husband_id)
           self.AddHusband(husband)
+      elif name == 'father':
+        father = self.Family().Person(name=value)
+        self.SetFather(father)
       else:
         raise ValueError(f'Invalid person attribute "{name}".')
     return self
