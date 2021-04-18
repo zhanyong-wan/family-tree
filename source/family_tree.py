@@ -343,15 +343,15 @@ class Family:
       dot.append(f'\t# Parents of generation {gen_num}.')
       for marriage_id, children in marriage_to_children:
         if len(children) == 1:
-          dot.append(f'\t{marriage_id} -> {children[0]} [weight=100];')
+          dot.append(f'\t{marriage_id} -> {children[0]} [weight=10];')
         else:
           for child in children:
             # Define the elbow point.
             dot.append(f'\tp_{child} [shape=circle label="" height=0.01 width=0.01];')
           middle_child = children[(len(children) -1) // 2]
-          dot.append(f'\t{marriage_id} -> p_{middle_child} [weight=100];')
+          dot.append(f'\t{marriage_id} -> p_{middle_child} [weight=10];')
           for child in children:
-            dot.append(f'\tp_{child} -> {child} [weight=100];')
+            dot.append(f'\tp_{child} -> {child} [weight=10];')
 
       dot.append('')
       dot.append(f'\t# Order the parent elbow points for generation {gen_num}.')
@@ -370,11 +370,27 @@ class Family:
 
       dot.append('')
       dot.append(f'\t# Order the people in generation {gen_num}.')
+      for p in gen:
+        if len(p.Wives()) > 1:
+          # Add extra elbow points to account for multiple wives of the same person.
+          elbows = []
+          dot.append(f'\tu_{p.ID()} [shape=circle label="" height=0.01 width=0.01];')
+          dot.append(f'\tu_{p.ID()} -> {p.ID()} [weight=10];')
+          elbows = [f'u_{p.ID()}']
+          for w in p.Wives()[1:]:
+            dot.append(f'\tu_{w.ID()} [shape=circle label="" height=0.01 width=0.01];')
+            dot.append(f'\tu_{w.ID()} -> m_{p.ID()}_{w.ID()} [weight=10];')
+            elbows.append(f'u_{w.ID()}')
+          dot.append('\t{')
+          dot.append('\t\trank=same;')
+          dot.append('\t\t' + ' -> '.join(elbows) + ';')
+          dot.append('\t}')
+
       dot.append('\t{')
       dot.append('\t\trank=same;')
       last_person = None
       last_male = None
-      for j, p in enumerate(gen):
+      for p in gen:
         marriage_id = None
         if last_male:
           wives = last_male.Wives()
@@ -385,8 +401,6 @@ class Family:
             if k == 0:
               dot.append(f'\t\t{last_male.ID()} -> {marriage_id} -> {p.ID()} [weight=10];')
             else:
-              last_wife = wives[k - 1]
-              dot.append(f'\t\t{last_wife.ID()} -> {marriage_id} [weight=5];')
               dot.append(f'\t\t{marriage_id} -> {p.ID()} [weight=10];')
         if last_person:
           if p not in last_person.Wives():
