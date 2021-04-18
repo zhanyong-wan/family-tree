@@ -311,6 +311,7 @@ class Family:
     rankdir=LR;
     node [shape=box fontname="Kai"];
     edge [dir=none];
+    graph [splines="line"];
 """)
 
     for i, gen in enumerate(self.Sort()):
@@ -342,15 +343,15 @@ class Family:
       dot.append(f'\t# Parents of generation {gen_num}.')
       for marriage_id, children in marriage_to_children:
         if len(children) == 1:
-          dot.append(f'\t{marriage_id} -> {children[0]} [weight=10];')
+          dot.append(f'\t{marriage_id} -> {children[0]} [weight=100];')
         else:
           for child in children:
             # Define the elbow point.
             dot.append(f'\tp_{child} [shape=circle label="" height=0.01 width=0.01];')
           middle_child = children[len(children) // 2]
-          dot.append(f'\t{marriage_id} -> p_{middle_child} [weight=10];')
+          dot.append(f'\t{marriage_id} -> p_{middle_child} [weight=100];')
           for child in children:
-            dot.append(f'\tp_{child} -> {child} [weight=10];')
+            dot.append(f'\tp_{child} -> {child} [weight=100];')
 
       dot.append('')
       dot.append(f'\t# Order the parent elbow points for generation {gen_num}.')
@@ -384,7 +385,8 @@ class Family:
             if k == 0:
               dot.append(f'\t\t{last_male.ID()} -> {marriage_id} -> {p.ID()} [weight=10];')
             else:
-              dot.append(f'\t\t{last_male.ID()} -> {marriage_id};')
+              last_wife = wives[k - 1]
+              dot.append(f'\t\t{last_wife.ID()} -> {marriage_id} [weight=5];')
               dot.append(f'\t\t{marriage_id} -> {p.ID()} [weight=10];')
         if last_person:
           if p not in last_person.Wives():
