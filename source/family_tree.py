@@ -293,7 +293,36 @@ class Family:
     node [shape=box fontname="Kai"];
     edge [dir=none];
 """)
-    for p in self.people:
-      dot.append('\t' + p.ToDot())
+
+    for i, gen in enumerate(self.Sort()):
+      dot.append(f'\t# Generation {i + 1}.')
+      for p in gen:
+        dot.append('\t' + p.ToDot())
+
+      dot.append('\t{')
+      dot.append('\t\trank=same;')
+      last_person = None
+      last_male = None
+      for j, p in enumerate(gen):
+        marriage_id = None
+        if last_male:
+          wives = last_male.Wives()
+          if p in wives:
+            k = wives.index(p)
+            marriage_id = f'm_{last_male.ID()}_{k}'
+            dot.append(f'\t\t{marriage_id} [shape="diamond" label="" height=0.25 width=0.25];')
+            if k == 0:
+              dot.append(f'\t\t{last_male.ID()} -> {marriage_id} -> {p.ID()} [weight=10];')
+            else:
+              dot.append(f'\t\t{last_male.ID()} -> {marriage_id} -> {p.ID()};')
+        if last_person:
+          if p not in last_person.Wives():
+            id = marriage_id if marriage_id else p.ID()
+            dot.append(f'\t\t{last_person.ID()} -> {id} [style="invis"];')
+        last_person = p
+        if p.Gender() == 'M':
+          last_male = p
+      dot.append('\t}')
+
     dot.append('}')
     return '\n'.join(dot)
