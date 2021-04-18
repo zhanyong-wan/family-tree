@@ -114,7 +114,8 @@ class Family:
     self.people = {}  # Maps ID to person.
     self.ids = []  # Person IDs, in the order they are first added.
 
-  def SetPerson(self, name: Text, **attribs) -> 'Family':
+  def Person(self, name: Text, **attribs) -> 'Family':
+    global Person
     id = _GetDefaultIdFromName(name)
     if id not in self.people:
       person = Person(self, name)
@@ -126,7 +127,7 @@ class Family:
     return self
 
   def PersonById(self, id: Text) -> Person:
-    self.SetPerson(id)
+    self.Person(name=id)
     return self.people[id]
 
   def ToDot(self) -> Text:
