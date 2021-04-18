@@ -196,5 +196,14 @@ class FamilyTreeTest(unittest.TestCase):
     self.assertEqual(0, w1.Generation())
     self.assertEqual(0, w2.Generation())
 
+  def testDisplayName(self):
+    h = self.family.Person('王 大明', wife='李幺妹')
+    w = self.family.Person('李 幺妹', husband='王大明')
+    self.assertEqual('王大明', h.ID())
+    self.assertEqual('王 大明', h.Name())
+    self.assertEqual('李幺妹', w.ID())
+    self.assertEqual('李 幺妹', w.Name())
+    self.assertEqual(2, self.family.Size())
+
 if __name__ == '__main__':
   unittest.main()

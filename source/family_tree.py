@@ -106,8 +106,7 @@ class Person:
           value = (value,)
 
         for wife_name in value:
-          wife_id = _GetDefaultIdFromName(wife_name)
-          wife = self.Family().PersonById(wife_id)
+          wife = self.Family().PersonByName(name=wife_name)
           self.AddWife(wife)
       elif name == 'husband':
         # The 'husband' attribute can be either a string or a tuple of strings.
@@ -115,14 +114,13 @@ class Person:
           value = (value,)
 
         for husband_name in value:
-          husband_id = _GetDefaultIdFromName(husband_name)
-          husband = self.Family().PersonById(husband_id)
+          husband = self.Family().PersonByName(name=husband_name)
           self.AddHusband(husband)
       elif name == 'father':
-        father = self.Family().Person(name=value)
+        father = self.Family().PersonByName(name=value)
         self.SetFather(father)
       elif name == 'mother':
-        mother = self.Family().Person(name=value)
+        mother = self.Family().PersonByName(name=value)
         self.SetMother(mother)
       else:
         raise ValueError(f'Invalid person attribute "{name}".')
@@ -130,6 +128,9 @@ class Person:
 
   def ID(self) -> Text:
     return self.id
+
+  def Name(self) -> Text:
+    return self.name
 
   def Wives(self) -> Sequence['Person']:
     return self.wives
@@ -213,7 +214,12 @@ class Family:
   def Size(self) -> int:
     return len(self.people)
 
-  def Person(self, name: Text, **attribs) -> Person:
+  def Person(self, name: Text, **attribs) -> 'Person':
+    """Returns the person with the given name.
+    
+    Also sets the person's display name to `name`.
+    """
+
     global Person  # Allow referencing the outer name.
     id = _GetDefaultIdFromName(name)
     if id not in self.id_to_person:
@@ -225,8 +231,16 @@ class Family:
     person.Update(name=name).Update(**attribs)
     return person
 
-  def PersonById(self, id: Text) -> Person:
-    return self.Person(name=id)
+  def PersonByName(self, name: Text) -> Person:
+    """Returns the person with the given name, which may or may not contain spaces.
+
+    Unlike Person(name), this will not affect the person's display name.    
+    """
+
+    id = _GetDefaultIdFromName(name)
+    if id in self.id_to_person:
+      return self.id_to_person[id]
+    return self.Person(name=name)
 
   def Sort(self) -> List[List[Person]]:
     """Sorts the people by generation; within the same generation,
