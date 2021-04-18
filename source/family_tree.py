@@ -16,22 +16,62 @@ def _GetDefaultIdFromName(name: Text) -> Text:
 class Person:
   """Represents a person."""
 
-  def __init__(self, name: Text,
-               id: Optional[Text]=None,
-               gender: Optional[Text]=None,
-               birth: Optional[Text]=None,
-               death: Optional[Text]=None):
+  def __init__(self, family: 'Family', name: Text):
+    self.family = family
     self.name = name
-    self.id = id if id else _GetDefaultIdFromName(name)
-    self.gender = 'M' if (gender and gender=='M') else 'F'
-    self.birth = birth
-    self.death = death
+    self.id = _GetDefaultIdFromName(name)
+    self.gender = None
+    self.wife = None
+    self.husband = None
+    self.birth = None
+    self.death = None
+    self.children = None
+
+  def Family(self) -> 'Family':
+    return self.family
+
+  def Update(self, **args) -> 'Person':
+    for name, value in args.items():
+      if name == 'gender':
+        self.gender = 'M' if (gender and gender=='M') else 'F'
+      elif name == 'birth':
+        self.birth = value
+      elif name == 'death':
+        self.death = value
+      elif name == 'wife':
+        # The 'wife' attribute can be either a string or a tuple of strings.
+        if not isinstance(value, tuple):
+          value = (value,)
+        self.wife = value
+
+        # Infer the gender of this person and his wives.
+        self.SetGender('M')
+        for wife_id in value:
+          wife = self.Family().GetPerson(wife_id)
+          wife.SetGender('F')
+      else:
+        raise ValueError(f'Invalid person attribute "{name}".')
+    return self
 
   def ID(self) -> Text:
     return self.id
 
-  def Male(self) -> bool:
-    return self.gender == 'M'
+  def SetGender(self, gender : Text) -> 'Person':
+    self.gender = gender
+    return self
+
+  def Gender(self) -> Text:
+    return self.gender
+
+  def Birth(self) -> Text:
+    if self.birth and self.birth != '?':
+      return self.birth
+    return None
+
+  def Death(self) -> Text:
+    if self.death and self.death != '?':
+      return self.death
+    return None
 
   def Deceased(self) -> bool:
     return self.death
@@ -39,20 +79,22 @@ class Person:
   def ToDot(self) -> Text:
     attribs = []
     label = self.name
-    if self.birth or self.death:
+    birth = self.Birth()
+    death = self.Death()
+    if birth or death:
       label += r'\n'
-      if self.birth:
-        label += self.birth
+      if birth:
+        label += birth
       label += '-'
-      if self.death:
-        label += self.death
+      if death:
+        label += death
     attribs.append(f'label="{label}"')
     if self.Deceased():
-      if self.Male():
+      if self.Gender() == 'M':
         attribs.append('style="bold"')
       else:
         attribs.append('style="bold,rounded"')
-    elif self.Male():
+    elif self.Gender() == 'M':
       attribs.append('style="filled"')
       attribs.append('fillcolor="lightblue"')
     else:  # Female
@@ -69,16 +111,20 @@ class Family:
     self.people = {}  # Maps ID to person.
     self.ids = []  # Person IDs, in the order they are first added.
 
-  def Add(self, name: Text,
-          id: Optional[Text]=None,
-          gender: Optional[Text]=None,
-          birth: Optional[Text]=None,
-          death: Optional[Text]=None) -> 'Family':
-    person = Person(name=name, id=id, gender=gender, birth=birth, death=death)
-    self.people[person.ID()] = person
-    if person.ID() not in self.ids:
-      self.ids.append(person.ID())
+  def SetPerson(self, name: Text, **attribs) -> 'Family':
+    id = _GetDefaultIdFromName(name)
+    if id not in self.people:
+      person = Person(self, name)
+      self.people[id] = person
+      self.ids.append(id)
+    else:
+      person = self.people[id]
+    person.Update(**attribs)
     return self
+
+  def GetPerson(self, id: Text) -> Person:
+    self.SetPerson(id)
+    return self.people[id]
 
   def ToDot(self) -> Text:
     dot = []
