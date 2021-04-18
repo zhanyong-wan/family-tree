@@ -13,8 +13,72 @@ sys.path = [os.path.join(os.path.dirname(__file__), '..')] + sys.path
 from source import family_tree as ft
 
 class FamilyTreeTest(unittest.TestCase):
-  def testSample(self):
-    family = ft.Family()
+
+  def setUp(self):
+    self.family = ft.Family()
+
+  def testMakeEmptyFamily(self):
+    self.assertEqual(0, self.family.Size())
+
+  def testAddOnePerson(self):
+    self.family.Person('John Smith')
+    self.assertEqual(1, self.family.Size())
+
+  def testAddOnePersonWithGender(self):
+    p = self.family.Person('John Smith', gender='M')
+    self.assertEqual('M', p.Gender())
+
+  def testAddOnePersonWithAttributes(self):
+    p = self.family.Person('John Smith', birth='1942', death='?')
+    self.assertIsNone(p.Gender())  # Gender is unknown yet.
+    self.assertEqual('1942', p.Birth())
+    self.assertIsNone(p.Death())
+    self.assertTrue(p.Deceased())  # We know he's deceased as the death is '?'.
+    self.assertEqual(1, self.family.Size())
+
+  def testAddPersonWithWife(self):
+    p = self.family.Person('John Smith', wife='Ada Smith')
+    self.assertEqual('M', p.Gender())  # Inferred.
+    q = self.family.Person('Ada Smith')
+    self.assertEqual('F', q.Gender())  # Inferred.
+
+    wives = p.Wives()
+    self.assertEqual(1, len(wives), f'{p.wife_ids}')
+    self.assertEqual(q, wives[0])
+    self.assertEqual(0, len(p.Husbands()))
+
+    husbands = q.Husbands()
+    self.assertEqual(1, len(husbands))
+    self.assertEqual(p, husbands[0])
+    self.assertEqual(0, len(q.Wives()))
+
+    self.assertEqual(2, self.family.Size())
+
+  def testAddPersonWithTwoWives(self):
+    p = self.family.Person('John Smith', wife=('Ada Smith', 'Katty Lam'))
+    self.assertEqual('M', p.Gender())  # Inferred.
+    q = self.family.Person('Ada Smith')
+    self.assertEqual('F', q.Gender())  # Inferred.
+    r = self.family.Person('Katty Lam')
+    self.assertEqual('F', q.Gender())  # Inferred.
+
+    wives = p.Wives()
+    self.assertEqual(2, len(wives), f'{p.wife_ids}')
+    self.assertEqual(q, wives[0])
+    self.assertEqual(r, wives[1])
+    self.assertEqual(0, len(p.Husbands()))
+
+    husbands = q.Husbands()
+    self.assertEqual(1, len(husbands))
+    self.assertEqual(p, husbands[0])
+    self.assertEqual(0, len(q.Wives()))
+
+    husbands = r.Husbands()
+    self.assertEqual(1, len(husbands))
+    self.assertEqual(p, husbands[0])
+    self.assertEqual(0, len(r.Wives()))
+
+    self.assertEqual(3, self.family.Size())
 
 if __name__ == '__main__':
   unittest.main()

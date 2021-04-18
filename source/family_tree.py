@@ -60,7 +60,6 @@ class Person:
         # The 'wife' attribute can be either a string or a tuple of strings.
         if not isinstance(value, tuple):
           value = (value,)
-        self.wife_ids = value
 
         # Infer the gender of this person and his wives.
         for wife_name in value:
@@ -78,6 +77,11 @@ class Person:
     if not self.wife_ids:
       return []
     return [self.Family().PersonById(wife_id) for wife_id in self.wife_ids]
+
+  def Husbands(self) -> Sequence['Person']:
+    if not self.husband_ids:
+      return []
+    return [self.Family().PersonById(husband_id) for husband_id in self.husband_ids]
 
   def SetGender(self, gender : Text) -> 'Person':
     self.gender = gender
@@ -134,7 +138,10 @@ class Family:
     self.people = {}  # Maps ID to person.
     self.ids = []  # Person IDs, in the order they are first added.
 
-  def Person(self, name: Text, **attribs) -> 'Family':
+  def Size(self) -> int:
+    return len(self.ids)
+
+  def Person(self, name: Text, **attribs) -> Person:
     global Person  # Allow referencing the outer name.
     id = _GetDefaultIdFromName(name)
     if id not in self.people:
@@ -144,11 +151,10 @@ class Family:
     else:
       person = self.people[id]
     person.Update(name=name).Update(**attribs)
-    return self
+    return person
 
   def PersonById(self, id: Text) -> Person:
-    self.Person(name=id)
-    return self.people[id]
+    return self.Person(name=id)
 
   def ToDot(self) -> Text:
     dot = []
