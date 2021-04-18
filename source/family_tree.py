@@ -356,10 +356,10 @@ class Family:
         if len(children) == 1:
           continue
         if last_p_node:
-          dot.append('\t\t{last_p_node} -> p_{children[0]} [style="invis"];')
+          dot.append(f'\t\t{last_p_node} -> p_{children[0]} [style="invis"];')
         chain = ' -> '.join(f'p_{child}' for child in children)
         dot.append(f'\t\t{chain};')
-        last_p_node = children[-1]
+        last_p_node = f'p_{children[-1]}'
       dot.append('\t}')
 
       dot.append('')
