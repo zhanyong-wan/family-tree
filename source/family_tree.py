@@ -384,7 +384,8 @@ class Family:
             if k == 0:
               dot.append(f'\t\t{last_male.ID()} -> {marriage_id} -> {p.ID()} [weight=10];')
             else:
-              dot.append(f'\t\t{last_male.ID()} -> {marriage_id} -> {p.ID()};')
+              dot.append(f'\t\t{last_male.ID()} -> {marriage_id};')
+              dot.append(f'\t\t{marriage_id} -> {p.ID()} [weight=10];')
         if last_person:
           if p not in last_person.Wives():
             id = marriage_id if marriage_id else p.ID()
