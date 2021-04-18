@@ -22,6 +22,7 @@ class Person:
     self.order_added = None
     self.name = name
     self.id = _GetDefaultIdFromName(name)
+    self.annotation = None
     self.gender = None
     self.wives = []
     self.husbands = []
@@ -94,6 +95,8 @@ class Person:
     for name, value in args.items():
       if name == 'name':
         self.name = value
+      elif name == 'annotation':
+        self.annotation = value
       elif name == 'gender':
         self.gender = value
       elif name == 'birth':
@@ -179,6 +182,8 @@ class Person:
   def ToDot(self) -> Text:
     attribs = []
     label = self.name
+    if self.annotation:
+      label += f' ({self.annotation})'
     birth = self.Birth()
     death = self.Death()
     if birth or death:
