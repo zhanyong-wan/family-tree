@@ -48,8 +48,9 @@ class Person:
 
         # Infer the gender of this person and his wives.
         self.SetGender('M')
-        for wife_id in value:
-          wife = self.Family().GetPerson(wife_id)
+        for wife_name in value:
+          wife_id = _GetDefaultIdFromName(wife_name)
+          wife = self.Family().PersonById(wife_id)
           wife.SetGender('F')
       else:
         raise ValueError(f'Invalid person attribute "{name}".')
@@ -124,7 +125,7 @@ class Family:
     person.Update(name=name).Update(**attribs)
     return self
 
-  def GetPerson(self, id: Text) -> Person:
+  def PersonById(self, id: Text) -> Person:
     self.SetPerson(id)
     return self.people[id]
 
