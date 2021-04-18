@@ -80,5 +80,49 @@ class FamilyTreeTest(unittest.TestCase):
 
     self.assertEqual(3, self.family.Size())
 
+  def testAddPersonWithHusband(self):
+    q = self.family.Person('Ada Smith', husband='John Smith')
+    self.assertEqual('F', q.Gender())  # Inferred.
+    p = self.family.Person('John Smith')
+    self.assertEqual('M', p.Gender())  # Inferred.
+
+    wives = p.Wives()
+    self.assertEqual(1, len(wives), f'{p.wife_ids}')
+    self.assertEqual(q, wives[0])
+    self.assertEqual(0, len(p.Husbands()))
+
+    husbands = q.Husbands()
+    self.assertEqual(1, len(husbands))
+    self.assertEqual(p, husbands[0])
+    self.assertEqual(0, len(q.Wives()))
+
+    self.assertEqual(2, self.family.Size())
+
+  def testAddPersonWithTwoHusbands(self):
+    p = self.family.Person('Ada Smith', husband=('John Smith', 'Mike Jin'))
+    self.assertEqual('F', p.Gender())  # Inferred.
+    q = self.family.Person('John Smith')
+    self.assertEqual('M', q.Gender())  # Inferred.
+    r = self.family.Person('Mike Jin')
+    self.assertEqual('M', q.Gender())  # Inferred.
+
+    husbands = p.Husbands()
+    self.assertEqual(2, len(husbands))
+    self.assertEqual(q, husbands[0])
+    self.assertEqual(r, husbands[1])
+    self.assertEqual(0, len(p.Wives()))
+
+    wives = q.Wives()
+    self.assertEqual(1, len(wives))
+    self.assertEqual(p, wives[0])
+    self.assertEqual(0, len(q.Husbands()))
+
+    wives = r.Wives()
+    self.assertEqual(1, len(wives))
+    self.assertEqual(p, wives[0])
+    self.assertEqual(0, len(r.Husbands()))
+
+    self.assertEqual(3, self.family.Size())
+
 if __name__ == '__main__':
   unittest.main()

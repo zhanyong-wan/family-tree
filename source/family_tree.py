@@ -61,11 +61,19 @@ class Person:
         if not isinstance(value, tuple):
           value = (value,)
 
-        # Infer the gender of this person and his wives.
         for wife_name in value:
           wife_id = _GetDefaultIdFromName(wife_name)
           wife = self.Family().PersonById(wife_id)
           self.AddWife(wife)
+      elif name == 'husband':
+        # The 'husband' attribute can be either a string or a tuple of strings.
+        if not isinstance(value, tuple):
+          value = (value,)
+
+        for husband_name in value:
+          husband_id = _GetDefaultIdFromName(husband_name)
+          husband = self.Family().PersonById(husband_id)
+          self.AddHusband(husband)
       else:
         raise ValueError(f'Invalid person attribute "{name}".')
     return self
