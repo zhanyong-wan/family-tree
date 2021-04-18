@@ -6,7 +6,7 @@ graphviz (dot).
 
 __author__ = 'Zhanyong Wan'
 
-from typing import Optional, Sequence, Text
+from typing import List, Optional, Sequence, Text
 
 def _GetDefaultIdFromName(name: Text) -> Text:
   """Gets a person's default ID from their name."""
@@ -18,6 +18,8 @@ class Person:
 
   def __init__(self, family: 'Family', name: Text):
     self.family = family
+    self.generation = None
+    self.order_added = None
     self.name = name
     self.id = _GetDefaultIdFromName(name)
     self.gender = None
@@ -31,6 +33,9 @@ class Person:
 
   def Family(self) -> 'Family':
     return self.family
+
+  def Generation(self) -> int:
+    return self.generation
 
   def AddWife(self, wife: 'Person') -> 'Person':
     for w in self.wives:
@@ -152,6 +157,24 @@ class Person:
   def Deceased(self) -> bool:
     return self.death
 
+  def PropagateGeneration(self, my_generation: int) -> 'Person':
+    if self.generation is not None:
+      assert self.generation == my_generation
+      return self
+
+    self.generation = my_generation
+    if self.Father():
+      self.Father().PropagateGeneration(my_generation - 1)
+    if self.Mother():
+      self.Mother().PropagateGeneration(my_generation - 1)
+    for husband in self.Husbands():
+      husband.PropagateGeneration(my_generation)
+    for wife in self.Wives():
+      wife.PropagateGeneration(my_generation)
+    for child in self.Children():
+      child.PropagateGeneration(my_generation + 1)
+    return self
+
   def ToDot(self) -> Text:
     attribs = []
     label = self.name
@@ -184,26 +207,56 @@ class Family:
   """Represents a family of people."""
 
   def __init__(self):
-    self.people = {}  # Maps ID to person.
-    self.ids = []  # Person IDs, in the order they are first added.
+    self.id_to_person = {}  # Maps ID to person.
+    self.people = []  # People in the order they are first added.
 
   def Size(self) -> int:
-    return len(self.ids)
+    return len(self.people)
 
   def Person(self, name: Text, **attribs) -> Person:
     global Person  # Allow referencing the outer name.
     id = _GetDefaultIdFromName(name)
-    if id not in self.people:
+    if id not in self.id_to_person:
       person = Person(self, name)
-      self.people[id] = person
-      self.ids.append(id)
+      self.id_to_person[id] = person
+      self.people.append(person)
     else:
-      person = self.people[id]
+      person = self.id_to_person[id]
     person.Update(name=name).Update(**attribs)
     return person
 
   def PersonById(self, id: Text) -> Person:
     return self.Person(name=id)
+
+  def Sort(self) -> List[List[Person]]:
+    """Sorts the people by generation; within the same generation,
+    sort by the order they are added.
+
+    Each element in the return value is a list of people in the same generation.
+    """
+
+    if not self.people:
+      return [[]]
+
+    for i, p in enumerate(self.people):
+      p.generation = None
+      p.order_added = i
+
+    for p in self.people:
+      if p.generation is None:
+        p.PropagateGeneration(1)
+
+    max_generation = max(p.generation for p in self.people)
+    min_generation = min(p.generation for p in self.people)
+    num_generations = max_generation - min_generation + 1
+    for p in self.people:
+      p.generation -= min_generation
+
+    generations = [[] for i in range(num_generations)]
+    for p in self.people:
+      generations[p.Generation()].append(p)
+
+    return generations
 
   def ToDot(self) -> Text:
     dot = []
@@ -212,8 +265,7 @@ class Family:
     node [shape=box fontname="Kai"];
     edge [dir=none];
 """)
-    for id in self.ids:
-      p = self.people[id]
+    for p in self.people:
       dot.append('\t' + p.ToDot())
     dot.append('}')
     return '\n'.join(dot)

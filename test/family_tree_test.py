@@ -158,5 +158,27 @@ class FamilyTreeTest(unittest.TestCase):
 
     self.assertEqual(2, self.family.Size())
 
+  def testSortEmptyFamily(self):
+    self.assertEqual([[]], self.family.Sort())
+
+  def testSortFamilyOfOne(self):
+    p = self.family.Person('Adam Smith')
+    self.assertEqual([[p]], self.family.Sort())
+    self.assertEqual(0, p.Generation())
+
+  def testSortCouple(self):
+    p = self.family.Person('Adam Smith', wife='Jan Smith')
+    q = self.family.Person('Jan Smith')
+    self.assertEqual([[p, q]], self.family.Sort())
+    self.assertEqual(0, p.Generation())
+    self.assertEqual(0, q.Generation())
+
+  def testSortFatherSon(self):
+    p = self.family.Person('Adam Smith', father='Jim Smith')
+    q = self.family.Person('Jim Smith')
+    self.assertEqual([[q], [p]], self.family.Sort())
+    self.assertEqual(0, q.Generation())
+    self.assertEqual(1, p.Generation())
+
 if __name__ == '__main__':
   unittest.main()
