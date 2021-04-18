@@ -299,6 +299,10 @@ class Family:
       for p in gen:
         dot.append('\t' + p.ToDot())
 
+      for p in gen:
+        if p.Father() and p.Mother():
+          marriage_id = f'm_{p.Father().ID()}_{p.Mother().ID()}'
+          dot.append(f'\t{marriage_id} -> {p.ID()};')
       dot.append('\t{')
       dot.append('\t\trank=same;')
       last_person = None
@@ -309,7 +313,7 @@ class Family:
           wives = last_male.Wives()
           if p in wives:
             k = wives.index(p)
-            marriage_id = f'm_{last_male.ID()}_{k}'
+            marriage_id = f'm_{last_male.ID()}_{p.ID()}'
             dot.append(f'\t\t{marriage_id} [shape="diamond" label="" height=0.25 width=0.25];')
             if k == 0:
               dot.append(f'\t\t{last_male.ID()} -> {marriage_id} -> {p.ID()} [weight=10];')
