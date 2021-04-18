@@ -6,7 +6,7 @@ graphviz (dot).
 
 __author__ = 'Zhanyong Wan'
 
-from typing import List, Optional, Sequence, Text
+from typing import List, Optional, Sequence, Text, Tuple
 
 def _GetDefaultIdFromName(name: Text) -> Text:
   """Gets a person's default ID from their name."""
@@ -255,6 +255,34 @@ class Family:
     generations = [[] for i in range(num_generations)]
     for p in self.people:
       generations[p.Generation()].append(p)
+    
+    def GetRankInGeneration(p: Person) -> Tuple[int, int]:
+      """Returns the rank of the person within the same generation."""
+
+      # A male is ranked by the order he was added.
+      if p.Gender() == 'M':
+        return (p.order_added, 0)
+
+      # Now we know p is a female.
+
+      # If p has not had a husband, she's ranked by the order she was added.
+      husbands = p.Husbands()
+      if not husbands:
+        return (p.order_added, 0)
+
+      # p has had at least one husband.  She should be after her highest-ranked
+      # husband.
+      max_husband_rank = max(h.order_added for h in husbands)
+      for h in husbands:
+        if h.order_added == max_husband_rank:
+          # In case this husband has N wives, the wives should be ranked by the
+          # order they were married.
+          for i, w in enumerate(h.Wives()):
+            if w == p:
+              return (max_husband_rank, i + 1)
+
+    for gen in generations:
+      gen.sort(key=GetRankInGeneration)
 
     return generations
 
