@@ -58,6 +58,13 @@ class Person:
   def Father(self) -> 'Person':
     return self.father
 
+  def SetMother(self, mother: 'Person') -> 'Person':
+    if self.mother != mother:
+      mother.SetGender('F')
+      self.mother = mother
+      mother.AddChild(self)
+    return self
+
   def Mother(self) -> 'Person':
     return self.mother
 
@@ -70,7 +77,7 @@ class Person:
     if self.Gender() == 'M':
       child.SetFather(self)
     elif self.Gender() == 'F':
-      child.SetMonther(self)
+      child.SetMother(self)
     return self
 
   def Children(self) -> Sequence['Person']:
@@ -107,6 +114,9 @@ class Person:
       elif name == 'father':
         father = self.Family().Person(name=value)
         self.SetFather(father)
+      elif name == 'mother':
+        mother = self.Family().Person(name=value)
+        self.SetMother(mother)
       else:
         raise ValueError(f'Invalid person attribute "{name}".')
     return self
