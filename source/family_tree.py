@@ -212,7 +212,8 @@ class Person:
 class Family:
   """Represents a family of people."""
 
-  def __init__(self):
+  def __init__(self, rankdir : Text=None):
+    self.rankdir = rankdir
     self.id_to_person = {}  # Maps ID to person.
     self.people = []  # People in the order they are first added.
 
@@ -307,8 +308,9 @@ class Family:
 
   def ToDot(self) -> Text:
     dot = []
-    dot.append("""digraph G {
-    rankdir=LR;
+    rankdir = self.rankdir if self.rankdir else ''
+    dot.append(f"""digraph G {{
+    rankdir="{rankdir}";
     node [shape=box fontname="Kai"];
     edge [dir=none];
     graph [splines="line"];
