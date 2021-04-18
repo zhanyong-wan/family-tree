@@ -6,7 +6,7 @@ graphviz (dot).
 
 __author__ = 'Zhanyong Wan'
 
-from typing import Optional, Text
+from typing import Optional, Sequence, Text
 
 def _GetDefaultIdFromName(name: Text) -> Text:
   """Gets a person's default ID from their name."""
@@ -21,8 +21,8 @@ class Person:
     self.name = name
     self.id = _GetDefaultIdFromName(name)
     self.gender = None
-    self.wife = None
-    self.husband = None
+    self.wife_ids = []  # IDs of wives.
+    self.husband_ids = []  # IDs of husbands.
     self.birth = None
     self.death = None
     self.children = None
@@ -30,12 +30,28 @@ class Person:
   def Family(self) -> 'Family':
     return self.family
 
+  def AddWife(self, wife: 'Person') -> 'Person':
+    self.SetGender('M')
+    wife_id = wife.ID()
+    if wife_id not in self.wife_ids:
+      self.wife_ids.append(wife_id)
+      wife.AddHusband(self)
+    return self
+
+  def AddHusband(self, husband: 'Person') -> 'Person':
+    self.SetGender('F')
+    husband_id = husband.ID()
+    if husband_id not in self.husband_ids:
+      self.husband_ids.append(husband_id)
+      husband.AddWife(self)
+    return self
+
   def Update(self, **args) -> 'Person':
     for name, value in args.items():
       if name == 'name':
         self.name = value
       elif name == 'gender':
-        self.gender = 'M' if (gender and gender=='M') else 'F'
+        self.gender = value
       elif name == 'birth':
         self.birth = value
       elif name == 'death':
@@ -44,20 +60,24 @@ class Person:
         # The 'wife' attribute can be either a string or a tuple of strings.
         if not isinstance(value, tuple):
           value = (value,)
-        self.wife = value
+        self.wife_ids = value
 
         # Infer the gender of this person and his wives.
-        self.SetGender('M')
         for wife_name in value:
           wife_id = _GetDefaultIdFromName(wife_name)
           wife = self.Family().PersonById(wife_id)
-          wife.SetGender('F')
+          self.AddWife(wife)
       else:
         raise ValueError(f'Invalid person attribute "{name}".')
     return self
 
   def ID(self) -> Text:
     return self.id
+
+  def Wives(self) -> Sequence['Person']:
+    if not self.wife_ids:
+      return []
+    return [self.Family().PersonById(wife_id) for wife_id in self.wife_ids]
 
   def SetGender(self, gender : Text) -> 'Person':
     self.gender = gender
@@ -115,7 +135,7 @@ class Family:
     self.ids = []  # Person IDs, in the order they are first added.
 
   def Person(self, name: Text, **attribs) -> 'Family':
-    global Person
+    global Person  # Allow referencing the outer name.
     id = _GetDefaultIdFromName(name)
     if id not in self.people:
       person = Person(self, name)
