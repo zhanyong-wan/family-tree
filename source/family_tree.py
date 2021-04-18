@@ -32,7 +32,9 @@ class Person:
 
   def Update(self, **args) -> 'Person':
     for name, value in args.items():
-      if name == 'gender':
+      if name == 'name':
+        self.name = value
+      elif name == 'gender':
         self.gender = 'M' if (gender and gender=='M') else 'F'
       elif name == 'birth':
         self.birth = value
@@ -119,7 +121,7 @@ class Family:
       self.ids.append(id)
     else:
       person = self.people[id]
-    person.Update(**attribs)
+    person.Update(name=name).Update(**attribs)
     return self
 
   def GetPerson(self, id: Text) -> Person:
