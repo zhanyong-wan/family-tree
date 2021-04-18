@@ -21,8 +21,8 @@ class Person:
     self.name = name
     self.id = _GetDefaultIdFromName(name)
     self.gender = None
-    self.wife_ids = []  # IDs of wives.
-    self.husband_ids = []  # IDs of husbands.
+    self.wives = []
+    self.husbands = []
     self.father = None
     self.mother = None
     self.children = []
@@ -33,19 +33,21 @@ class Person:
     return self.family
 
   def AddWife(self, wife: 'Person') -> 'Person':
+    for w in self.wives:
+      if w == wife:
+        return self
     self.SetGender('M')
-    wife_id = wife.ID()
-    if wife_id not in self.wife_ids:
-      self.wife_ids.append(wife_id)
-      wife.AddHusband(self)
+    self.wives.append(wife)
+    wife.AddHusband(self)
     return self
 
   def AddHusband(self, husband: 'Person') -> 'Person':
+    for h in self.husbands:
+      if h == husband:
+        return self
     self.SetGender('F')
-    husband_id = husband.ID()
-    if husband_id not in self.husband_ids:
-      self.husband_ids.append(husband_id)
-      husband.AddWife(self)
+    self.husbands.append(husband)
+    husband.AddWife(self)
     return self
 
   def SetFather(self, father: 'Person') -> 'Person':
@@ -125,14 +127,10 @@ class Person:
     return self.id
 
   def Wives(self) -> Sequence['Person']:
-    if not self.wife_ids:
-      return []
-    return [self.Family().PersonById(wife_id) for wife_id in self.wife_ids]
+    return self.wives
 
   def Husbands(self) -> Sequence['Person']:
-    if not self.husband_ids:
-      return []
-    return [self.Family().PersonById(husband_id) for husband_id in self.husband_ids]
+    return self.husbands
 
   def SetGender(self, gender : Text) -> 'Person':
     self.gender = gender

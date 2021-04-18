@@ -43,7 +43,7 @@ class FamilyTreeTest(unittest.TestCase):
     self.assertEqual('F', q.Gender())  # Inferred.
 
     wives = p.Wives()
-    self.assertEqual(1, len(wives), f'{p.wife_ids}')
+    self.assertEqual(1, len(wives))
     self.assertEqual(q, wives[0])
     self.assertEqual(0, len(p.Husbands()))
 
@@ -63,7 +63,7 @@ class FamilyTreeTest(unittest.TestCase):
     self.assertEqual('F', q.Gender())  # Inferred.
 
     wives = p.Wives()
-    self.assertEqual(2, len(wives), f'{p.wife_ids}')
+    self.assertEqual(2, len(wives))
     self.assertEqual(q, wives[0])
     self.assertEqual(r, wives[1])
     self.assertEqual(0, len(p.Husbands()))
@@ -87,7 +87,7 @@ class FamilyTreeTest(unittest.TestCase):
     self.assertEqual('M', p.Gender())  # Inferred.
 
     wives = p.Wives()
-    self.assertEqual(1, len(wives), f'{p.wife_ids}')
+    self.assertEqual(1, len(wives))
     self.assertEqual(q, wives[0])
     self.assertEqual(0, len(p.Husbands()))
 
