@@ -132,9 +132,15 @@ class Person:
       elif name == 'father':
         father = self.Family().PersonByName(name=value)
         self.SetFather(father)
+        mothers = father.Wives()
+        if len(mothers) == 1 and not self.mother:
+          self.SetMother(mothers[0])          
       elif name == 'mother':
         mother = self.Family().PersonByName(name=value)
         self.SetMother(mother)
+        fathers = mother.Husbands()
+        if len(fathers) == 1 and not self.father:
+          self.SetFather(fathers[0])
       else:
         raise ValueError(f'Invalid person attribute "{name}".')
     return self
