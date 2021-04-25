@@ -31,6 +31,7 @@ class Person:
     self.children = []
     self.birth = None
     self.death = None
+    self.spouse_death = None
 
   def Family(self) -> 'Family':
     return self.family
@@ -103,6 +104,11 @@ class Person:
         self.birth = value
       elif name == 'death':
         self.death = value
+      elif name == 'spouse_death':
+        self.spouse_death = value
+        if self.spouse_death:
+          for spouse in self.Wives() + self.Husbands():
+            spouse.death = self.spouse_death
       elif name == 'wife':
         # The 'wife' attribute can be either a string or a tuple of strings.
         if not isinstance(value, tuple):
@@ -110,6 +116,8 @@ class Person:
 
         for wife_name in value:
           wife = self.Family().PersonByName(name=wife_name)
+          if self.spouse_death:  # Spouse death status is known.
+            wife.death = self.spouse_death
           self.AddWife(wife)
       elif name == 'husband':
         # The 'husband' attribute can be either a string or a tuple of strings.
@@ -118,6 +126,8 @@ class Person:
 
         for husband_name in value:
           husband = self.Family().PersonByName(name=husband_name)
+          if self.spouse_death:  # Spouse death status is known.
+            husband.death = self.spouse_death
           self.AddHusband(husband)
       elif name == 'father':
         father = self.Family().PersonByName(name=value)
